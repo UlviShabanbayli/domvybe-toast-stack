@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#050506">
+  <title>Frost toasts — UI Components 14</title>
+  <!-- before the first paint: the look (?look=frost|mono|ivory, or a|b|c), so the page never flashes the wrong one.
+       ?full=1 renders the page on its own at the real viewport size (the toasts sit in the screen's corner). -->
+  <script>
+    (() => {
+      const html = document.documentElement, q = new URLSearchParams(location.search);
+      const look = { a: 'frost', b: 'mono', c: 'ivory' }[q.get('look')] || q.get('look');
+      html.dataset.look = ['frost', 'mono', 'ivory'].includes(look) ? look : 'frost';
+      if (q.get('full') === '1') html.dataset.full = '';
+      // each look is its own post in the series: its number, its name and its line in the title
+      const [num, name, hint] = {
+        frost: ['14', 'Frost', 'Drop in. Stack up. Swipe away.'],
+        mono: ['15', 'Mono', 'Deploy. Copy. Undo. Retry.'],
+        ivory: ['16', 'Ivory', 'Paid. Shipped. Quietly told.'],
+      }[html.dataset.look];
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelector('.series b').textContent = num;
+        document.querySelector('.title h1').firstChild.textContent = `${name} `;
+        document.querySelector('.hint').textContent = hint;
+        document.title = `${name} toasts — UI Components ${num}`;
+      });
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400..600&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="stage">
+    <div class="frame">                                      <!-- the 9:16 composition, scaled to fit any screen (app.js) -->
+      <div class="amb" aria-hidden="true"><i class="glow g1"></i><i class="glow g2"></i><i class="glow g3"></i></div>
+
+      <header class="title">
+        <p class="series"><span>UI Components</span><b>14</b></p>
+        <h1>Frost <em>toasts</em></h1>
+        <p class="hint">Drop in. Stack up. Swipe away.</p>
+      </header>
+
+      <!-- ============================== THE COMPONENT ==============================
+           Toasts: short messages that arrive in a corner of the screen and stack like a deck. Point at the deck (or tap
+           it, or tab into it) and it fans out into a list; swipe one away, or let its time run out. Each says who or what
+           it is from, what happened, and offers what to do next: a message to reply to, a payment that counts up, an
+           upload that fills, an invite to accept, a deploy that becomes ready, an undo with its countdown, an error with
+           a retry. The buttons below are the page's own actions that raise them (app.js names them per look). -->
+      <section class="actions" aria-label="Try the toasts">
+        <button class="act" type="button" data-toast="a"><svg viewBox="0 0 24 24" aria-hidden="true"><path/></svg><b></b><span></span></button>
+        <button class="act" type="button" data-toast="b"><svg viewBox="0 0 24 24" aria-hidden="true"><path/></svg><b></b><span></span></button>
+        <button class="act" type="button" data-toast="c"><svg viewBox="0 0 24 24" aria-hidden="true"><path/></svg><b></b><span></span></button>
+        <button class="act" type="button" data-toast="d"><svg viewBox="0 0 24 24" aria-hidden="true"><path/></svg><b></b><span></span></button>
+      </section>
+
+      <!-- the toasts' corner: a labelled region (Alt+T moves the focus into it); each toast is a list item -->
+      <section class="toasts" aria-label="Notifications (Alt+T)" tabindex="-1">
+        <ol class="deck"></ol>
+      </section>
+    </div>
+  </main>
+  <div class="touch" aria-hidden="true"></div>
+
+  <!-- one toast; app.js fills in where it is from, its picture, its words and its buttons -->
+  <template id="toast">
+    <li class="toast">
+      <div class="glass" aria-hidden="true"><i class="fill"></i><i class="timer"></i></div>   <!-- the card's surface -->
+      <div class="body">
+        <p class="meta"><span class="app"><i class="app-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path/></svg></i><b class="app-name"></b></span><time class="when">now</time></p>
+        <div class="row">
+          <span class="pic" aria-hidden="true">
+            <svg class="status" viewBox="0 0 32 32">
+              <circle class="ring-track" cx="16" cy="16" r="13"/><circle class="ring" cx="16" cy="16" r="13" pathLength="1"/>
+              <path class="i-done" pathLength="1" d="M10.5 16.5l3.6 3.6 7.4-8"/>
+              <path class="i-error" d="M16 9.5v8M16 22v.4"/>
+              <path class="i-undo" d="M11 14.5h7.5a4 4 0 0 1 0 8H14M11 14.5l3-3M11 14.5l3 3"/>
+            </svg>
+            <b class="face"></b>
+            <svg class="thing" viewBox="0 0 40 40"><path/></svg>
+          </span>
+          <div class="text"><p class="t-title"></p><p class="t-desc"></p><p class="t-code"></p></div>
+          <button class="t-close" type="button" aria-label="Dismiss"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
+        </div>
+        <div class="t-actions"><button class="t-action" type="button"></button><button class="t-action t-alt" type="button"></button></div>
+      </div>
+    </li>
+  </template>
+
+  <script src="spring.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

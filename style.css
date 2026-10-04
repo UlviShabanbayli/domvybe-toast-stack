@@ -1,0 +1,268 @@
+/* Toasts — short messages that arrive in a corner of the screen and stack like a deck; they fan out into a list when you
+   point at them, swipe away, count down an undo, fill while something uploads or deploys, and shake when it fails.
+   Three looks, each its own post: Frost (frosted system banners that drop from the top), Mono (a developer tool's
+   quiet black and grey), Ivory (an editorial ivory with serif titles and gold hairlines).
+
+   1 tokens: primitive → semantic (per look) → component     2 stage, frame, ambient     3 the frame's words
+   4 the actions     5 the toasts' corner     6 a toast: surface, meta, picture, words, buttons, kinds
+   7 the frame's footer     8 ?full=1: the real page     9 reduced motion
+
+   ---- 1. TOKENS -------------------------------------------------------------------------------------------------
+   1a PRIMITIVES (:root): neutrals, and each look's own ramp.
+   1b SEMANTIC TOKENS (per look, on [data-look]): what a value is FOR.
+        type     --title-face --title-w --title-size --em-face --em-style --em-w --em-size --em
+                 --toast-face --toast-w --title-px --desc-px --meta-face --meta-case --meta-track
+        field    --page --field-bg --on-field --on-field-muted --chip --on-chip --avatar-ring --lockup --light
+        surface  --surface --surface-filter --surface-rim --surface-drop --toast-r
+        toast    --on-toast --on-toast-muted --ok --bad --busy --track --fill --timer --code --code-edge --on-code
+                 --btn --on-btn --btn-alt --on-btn-alt --btn-alt-edge --btn-r --btn-case --btn-track --thing
+        action   --act --act-filter --act-rim --act-press --act-edge --on-act --on-act-muted --act-face --act-w
+        frame    --pill --pill-edge --on-pill --on-pill-muted --pill-icon --on-pill-icon
+   1c COMPONENT TOKENS: each component names the semantic tokens it uses (.toast { --t-… }). */
+
+:root {
+  --n-1000: #000; --n-0: #fff;
+  --w-6: rgb(255 255 255 / .06); --w-12: rgb(255 255 255 / .12); --w-18: rgb(255 255 255 / .18); --w-40: rgb(255 255 255 / .4);
+  --b-25: rgb(0 0 0 / .25); --b-40: rgb(0 0 0 / .4); --b-70: rgb(0 0 0 / .7);
+  /* frost: a soft wallpaper, frosted white, system blue, green and red */
+  --fr-ink: #0B0B0F; --fr-ink-2: rgb(60 60 67 / .72); --fr-blue: #0A84FF; --fr-green: #30C15A; --fr-red: #F2453D; --fr-bg: #ECEFF7;
+  /* mono: near-black, greys, one green, one amber, one red */
+  --mo-950: #0A0A0A; --mo-900: #0F0F10; --mo-850: #161617; --mo-800: #1C1C1D; --mo-700: #262626; --mo-600: #333335; --mo-400: #8F8F8F; --mo-300: #A1A1A1; --mo-100: #EDEDED;
+  --mo-green: #45D483; --mo-amber: #F5A623; --mo-red: #F75F5F;
+  /* ivory: paper, ink, and a gold hairline */
+  --iv-50: #FBF8F2; --iv-100: #F4EFE6; --iv-200: #E9E1D2; --iv-ink: #141414; --iv-ink-2: #5C5548; --iv-ink-3: #8A7A5C; --iv-gold: #A8854A; --iv-red: #9E3B2E;
+
+  --sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --system: -apple-system, BlinkMacSystemFont, 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --serif: 'Instrument Serif', 'Times New Roman', serif;
+  --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+
+/* 1b · semantic tokens, per look */
+/* A · FROST: system banners on a soft wallpaper. Deep frosted white, an app icon and its name, actions as pills; the
+   deck hangs from the top of the screen and a banner drops into it */
+[data-look="frost"] {
+  --title-face: var(--system); --title-w: 700; --title-size: 44px; --em-face: var(--system); --em-style: normal; --em-w: 300; --em-size: 1em; --em: #3D4466;
+  --toast-face: var(--system); --toast-w: 600; --title-px: 15px; --desc-px: 14px; --meta-face: var(--system); --meta-case: uppercase; --meta-track: .02em;
+  --page: var(--fr-bg);
+  --field-bg: radial-gradient(60% 42% at 18% 22%, #A9CCFF 0%, transparent 62%), radial-gradient(52% 40% at 88% 34%, #E3BBFF 0%, transparent 64%),
+              radial-gradient(70% 46% at 50% 100%, #FFCDB8 0%, transparent 66%), radial-gradient(40% 30% at 70% 70%, #BDEBFF 0%, transparent 70%);
+  --on-field: var(--fr-ink); --on-field-muted: rgb(40 44 70 / .66); --chip: var(--fr-ink); --on-chip: var(--n-0);
+  --avatar-ring: var(--fr-ink); --lockup: brightness(0); --light: rgb(255 255 255 / .55);
+  --surface: rgb(255 255 255 / .56); --surface-filter: blur(30px) saturate(1.9);
+  --surface-rim: inset 0 0 0 .5px rgb(255 255 255 / .75), 0 0 0 .5px rgb(0 0 0 / .06);
+  --surface-drop: 0 14px 34px -12px rgb(30 40 90 / .28), 0 2px 6px rgb(30 40 90 / .08); --toast-r: 22px;
+  --on-toast: var(--fr-ink); --on-toast-muted: var(--fr-ink-2); --ok: var(--fr-green); --bad: var(--fr-red); --busy: var(--fr-blue);
+  --track: rgb(0 0 0 / .08); --fill: rgb(10 132 255 / .1); --timer: transparent;
+  --code: rgb(0 0 0 / .05); --code-edge: transparent; --on-code: var(--fr-ink);
+  --btn: var(--fr-blue); --on-btn: var(--n-0); --btn-alt: rgb(0 0 0 / .06); --on-btn-alt: var(--fr-ink); --btn-alt-edge: transparent;
+  --btn-r: 999px; --btn-case: none; --btn-track: 0; --thing: var(--fr-ink);
+  --act: rgb(255 255 255 / .5); --act-filter: blur(26px) saturate(1.8); --act-rim: inset 0 0 0 .5px rgb(255 255 255 / .7), 0 10px 26px -14px rgb(30 40 90 / .3);
+  --act-press: scale(.97); --act-edge: transparent; --on-act: var(--fr-ink); --on-act-muted: var(--fr-ink-2); --act-face: var(--system); --act-w: 600;
+  --pill: rgb(255 255 255 / .6); --pill-edge: rgb(255 255 255 / .7); --on-pill: var(--fr-ink); --on-pill-muted: var(--fr-ink-2); --pill-icon: var(--fr-ink); --on-pill-icon: var(--n-0);
+}
+
+/* B · MONO: a developer tool at night. Near-black, 1px hairlines, a soft light from above, monospace for what a machine
+   says; quick and exact, nothing bounces */
+[data-look="mono"] {
+  --title-face: var(--sans); --title-w: 600; --title-size: 44px; --em-face: var(--mono); --em-style: normal; --em-w: 400; --em-size: .82em; --em: var(--mo-300);
+  --toast-face: var(--sans); --toast-w: 500; --title-px: 14px; --desc-px: 13px; --meta-face: var(--mono); --meta-case: none; --meta-track: 0;
+  --page: var(--mo-950);
+  --field-bg: radial-gradient(60% 34% at 50% 0%, rgb(255 255 255 / .09), transparent 72%), radial-gradient(rgb(255 255 255 / .07) 1px, transparent 1px) 0 0 / 22px 22px;
+  --on-field: var(--mo-100); --on-field-muted: var(--mo-400); --chip: var(--mo-100); --on-chip: var(--mo-950);
+  --avatar-ring: var(--mo-400); --lockup: none; --light: rgb(255 255 255 / .05);
+  --surface: linear-gradient(180deg, var(--mo-850), var(--mo-900)); --surface-filter: none;
+  --surface-rim: inset 0 0 0 1px var(--mo-700), inset 0 1px 0 rgb(255 255 255 / .06);
+  --surface-drop: 0 16px 36px -14px rgb(0 0 0 / .9); --toast-r: 10px;
+  --on-toast: var(--mo-100); --on-toast-muted: var(--mo-300); --ok: var(--mo-green); --bad: var(--mo-red); --busy: var(--mo-amber);
+  --track: var(--mo-700); --fill: var(--mo-100); --timer: var(--mo-600);
+  --code: var(--mo-800); --code-edge: var(--mo-700); --on-code: var(--mo-100);
+  --btn: var(--mo-100); --on-btn: var(--mo-950); --btn-alt: transparent; --on-btn-alt: var(--mo-100); --btn-alt-edge: var(--mo-600);
+  --btn-r: 6px; --btn-case: none; --btn-track: 0; --thing: var(--mo-100);
+  --act: var(--mo-900); --act-filter: none; --act-rim: inset 0 0 0 1px var(--mo-700), inset 0 1px 0 rgb(255 255 255 / .05);
+  --act-press: translateY(1px); --act-edge: var(--mo-700); --on-act: var(--mo-100); --on-act-muted: var(--mo-400); --act-face: var(--sans); --act-w: 500;
+  --pill: var(--mo-900); --pill-edge: var(--mo-700); --on-pill: var(--mo-100); --on-pill-muted: var(--mo-400); --pill-icon: var(--mo-100); --on-pill-icon: var(--mo-950);
+}
+
+/* C · IVORY: an editorial page. Ivory paper, ink, a serif for what matters, letter-spaced capitals for the small print
+   and a gold hairline framing each card; it arrives and leaves slowly, without a sound */
+[data-look="ivory"] {
+  --title-face: var(--serif); --title-w: 400; --title-size: 54px; --em-face: var(--serif); --em-style: italic; --em-w: 400; --em-size: 1em; --em: var(--iv-gold);
+  --toast-face: var(--serif); --toast-w: 400; --title-px: 21px; --desc-px: 13px; --meta-face: var(--sans); --meta-case: uppercase; --meta-track: .22em;
+  --page: var(--iv-100);
+  --field-bg: radial-gradient(70% 50% at 50% 40%, var(--iv-50) 0%, var(--iv-100) 70%, var(--iv-200) 100%);
+  --on-field: var(--iv-ink); --on-field-muted: var(--iv-ink-2); --chip: var(--iv-ink); --on-chip: var(--iv-50);
+  --avatar-ring: var(--iv-ink); --lockup: brightness(0); --light: rgb(255 255 255 / .5);
+  --surface: var(--iv-50); --surface-filter: none;
+  --surface-rim: inset 0 0 0 1px rgb(20 20 20 / .1), inset 0 0 0 5px var(--iv-50), inset 0 0 0 6px rgb(168 133 74 / .42);
+  --surface-drop: 0 26px 44px -26px rgb(60 45 20 / .38); --toast-r: 2px;
+  --on-toast: var(--iv-ink); --on-toast-muted: var(--iv-ink-2); --ok: var(--iv-gold); --bad: var(--iv-red); --busy: var(--iv-gold);
+  --track: rgb(168 133 74 / .18); --fill: var(--iv-gold); --timer: rgb(168 133 74 / .55);
+  --code: transparent; --code-edge: transparent; --on-code: var(--iv-ink);
+  --btn: transparent; --on-btn: var(--iv-ink); --btn-alt: transparent; --on-btn-alt: var(--iv-ink-2); --btn-alt-edge: transparent;
+  --btn-r: 0; --btn-case: uppercase; --btn-track: .16em; --thing: var(--iv-gold);
+  --act: var(--iv-50); --act-filter: none; --act-rim: inset 0 0 0 1px rgb(20 20 20 / .1), 0 18px 30px -24px rgb(60 45 20 / .35);
+  --act-press: translateY(1px); --act-edge: rgb(168 133 74 / .4); --on-act: var(--iv-ink); --on-act-muted: var(--iv-ink-3); --act-face: var(--serif); --act-w: 400;
+  --pill: rgb(251 248 242 / .85); --pill-edge: rgb(20 20 20 / .1); --on-pill: var(--iv-ink); --on-pill-muted: var(--iv-ink-3); --pill-icon: var(--iv-ink); --on-pill-icon: var(--iv-50);
+}
+
+/* 1c · component tokens: each component names what it uses */
+.title    { --tt-face: var(--title-face); --tt-w: var(--title-w); --tt-size: var(--title-size); --tt-em-face: var(--em-face); --tt-em-style: var(--em-style);
+            --tt-em-w: var(--em-w); --tt-em-size: var(--em-size); --tt-em: var(--em);
+            --tt-ink: var(--on-field); --tt-muted: var(--on-field-muted); --tt-chip: var(--chip); --tt-on-chip: var(--on-chip); }
+.act      { --a-bg: var(--act); --a-filter: var(--act-filter); --a-rim: var(--act-rim); --a-press: var(--act-press); --a-edge: var(--act-edge);
+            --a-ink: var(--on-act); --a-dim: var(--on-act-muted); --a-face: var(--act-face); --a-w: var(--act-w); --a-r: calc(var(--toast-r) + 2px); }
+.toast    { --t-surface: var(--surface); --t-filter: var(--surface-filter); --t-rim: var(--surface-rim); --t-drop: var(--surface-drop); --t-r: var(--toast-r);
+            --t-face: var(--toast-face); --t-w: var(--toast-w); --t-title: var(--title-px); --t-desc: var(--desc-px);
+            --t-meta-face: var(--meta-face); --t-meta-case: var(--meta-case); --t-meta-track: var(--meta-track);
+            --t-ink: var(--on-toast); --t-dim: var(--on-toast-muted); --t-ok: var(--ok); --t-bad: var(--bad); --t-busy: var(--busy);
+            --t-track: var(--track); --t-fill: var(--fill); --t-timer: var(--timer); --t-code: var(--code); --t-code-edge: var(--code-edge); --t-on-code: var(--on-code);
+            --t-btn: var(--btn); --t-on-btn: var(--on-btn); --t-alt: var(--btn-alt); --t-on-alt: var(--on-btn-alt); --t-alt-edge: var(--btn-alt-edge);
+            --t-btn-r: var(--btn-r); --t-btn-case: var(--btn-case); --t-btn-track: var(--btn-track); --t-thing: var(--thing); }
+.tutorial { --pill-bg: var(--pill); --pill-line: var(--pill-edge); --pill-ink: var(--on-pill); --pill-dim: var(--on-pill-muted); --pill-ic: var(--pill-icon); --pill-on-ic: var(--on-pill-icon); }
+.credits  { --credit-ink: var(--on-field); --credit-muted: var(--on-field-muted); }
+
+/* ---- 2. the stage, the frame, ambient ---- */
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { font-family: var(--sans); background: var(--page); -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; overflow: hidden; }
+button { font: inherit; color: inherit; }
+.stage { position: relative; height: 100dvh; overflow: hidden; background: var(--field-bg), var(--page); color: var(--on-field); }
+.frame { position: absolute; left: 50%; top: 50%; width: 432px; height: 768px; margin: -384px 0 0 -216px; transform: scale(var(--k, 1)); }   /* centred even when the screen is narrower */
+.amb { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.glow { position: absolute; border-radius: 50%; background: radial-gradient(closest-side, var(--light), transparent); }
+.glow.g1 { left: -170px; top: 300px; width: 470px; height: 470px; }
+.glow.g2 { left: 220px; top: 190px; width: 420px; height: 420px; opacity: .75; }
+.glow.g3 { left: 40px; top: 520px; width: 420px; height: 320px; opacity: .6; }
+
+/* ---- 3. the frame's words ---- */
+.title { position: absolute; top: 30px; left: 0; right: 0; z-index: 3; text-align: center; color: var(--tt-ink); }
+.series { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 -4px; font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: .3em; text-transform: uppercase; color: var(--tt-muted); }
+.series b { display: inline-grid; place-items: center; height: 22px; padding: 0 9px; border-radius: 999px; font-size: 11px; letter-spacing: .04em; color: var(--tt-on-chip); background: var(--tt-chip); }
+.title h1 { margin: 0; height: 72px; font-family: var(--tt-face); font-size: var(--tt-size); font-weight: var(--tt-w); line-height: 72px; letter-spacing: -.045em; white-space: nowrap; }
+.title h1 em { font-family: var(--tt-em-face); font-size: var(--tt-em-size); font-weight: var(--tt-em-w); font-style: var(--tt-em-style); letter-spacing: -.02em; padding: 0 .06em; color: var(--tt-em); }
+.hint { margin: -7px 0 0; height: 20px; line-height: 20px; font-family: var(--sans); font-size: 14px; font-weight: 500; color: var(--tt-muted); }
+
+/* ---- 4. the actions: the page's own buttons that raise the toasts (app.js names them per look) ---- */
+.actions { position: absolute; left: 24px; right: 24px; top: 166px; z-index: 3; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.act { position: relative; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; align-items: center; column-gap: 12px;
+  min-height: 68px; padding: 12px 14px; border: 0; border-radius: var(--a-r); text-align: left; cursor: pointer; color: var(--a-ink);
+  background: var(--a-bg); box-shadow: var(--a-rim); -webkit-backdrop-filter: var(--a-filter); backdrop-filter: var(--a-filter); transition: transform .15s; }
+.act:active { transform: var(--a-press); }
+.act:focus-visible { outline: 2px solid var(--a-ink); outline-offset: 3px; }
+.act svg { grid-row: span 2; width: 20px; height: 20px; padding: 9px; box-sizing: content-box; border-radius: 11px; fill: none; stroke: currentColor; stroke-width: 1.7;
+  stroke-linecap: round; stroke-linejoin: round; box-shadow: inset 0 0 0 1px var(--a-edge); }
+.act b { font-family: var(--a-face); font-size: 15px; font-weight: var(--a-w); letter-spacing: -.01em; }
+.act span { font-size: 12.5px; font-weight: 500; color: var(--a-dim); }
+[data-look="ivory"] .act b { font-size: 20px; line-height: 1.05; }
+[data-look="ivory"] .act span { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; }
+[data-look="mono"] .act span { font-family: var(--mono); font-size: 11.5px; }
+/* frost: the banners hang from the top, so the page's buttons move down into one row, icon over name */
+[data-look="frost"] .actions { top: auto; bottom: 134px; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+[data-look="frost"] .act { grid-template-columns: 1fr; grid-template-rows: auto auto; justify-items: center; row-gap: 6px; min-height: 0; padding: 12px 6px 10px; text-align: center; }
+[data-look="frost"] .act svg { grid-row: auto; }
+[data-look="frost"] .act b { font-size: 13px; }
+[data-look="frost"] .act span { display: none; }
+
+/* ---- 5. the toasts' corner: anchored at the bottom (or, for frost, the top: --anchor, read by app.js); app.js places
+        every toast in it ---- */
+.toasts { --anchor: bottom; position: absolute; left: 22px; right: 22px; bottom: 138px; z-index: 6; height: var(--deck-h, 72px); outline: none; }
+.deck { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
+[data-look="frost"] .toasts { --anchor: top; top: 150px; bottom: auto; }
+
+/* ---- 6. a toast: the surface (sprung by app.js), the body over it ---- */
+.toast { position: absolute; left: 0; right: 0; bottom: 0; color: var(--t-ink); touch-action: pan-y; transform-origin: 50% 100%; font-family: var(--t-face); }
+[data-look="frost"] .toast { top: 0; bottom: auto; transform-origin: 50% 0; }
+.toast:focus-visible { outline: none; }
+.toast:focus-visible .glass { box-shadow: var(--t-rim), var(--t-drop), 0 0 0 2px var(--t-ink); }
+.glass { position: absolute; inset: 0; overflow: hidden; border-radius: var(--t-r); pointer-events: none;
+  background: var(--t-surface); box-shadow: var(--t-rim), var(--t-drop); -webkit-backdrop-filter: var(--t-filter); backdrop-filter: var(--t-filter); }
+.fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--t-fill); opacity: 0; }
+[data-look="mono"] .fill, [data-look="ivory"] .fill { top: auto; height: 2px; }                     /* a line along the bottom */
+[data-look="ivory"] .fill { height: 1px; bottom: 6px; left: 6px; }
+.timer { position: absolute; left: 16px; right: 16px; bottom: 7px; height: 1px; background: var(--t-timer); transform-origin: 0 50%; opacity: 0; }
+.body { position: relative; display: grid; gap: 8px; padding: 13px 12px 13px 15px; }
+[data-look="ivory"] .body { padding: 12px 14px 12px 16px; gap: 6px; }
+[data-look="frost"] .body { padding: 11px 12px 11px 14px; gap: 6px; }
+/* meta: where it is from (an app icon and its name, or the small print) and when */
+.meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0; padding-right: 30px; font-family: var(--t-meta-face);
+  font-size: 11.5px; font-weight: 500; letter-spacing: var(--t-meta-track); text-transform: var(--t-meta-case); color: var(--t-dim); }
+[data-look="ivory"] .meta { font-size: 10px; }
+.toast:not([data-app]) .meta { display: none; }
+.app { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.app b { font-weight: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-icon { display: none; width: 20px; height: 20px; border-radius: 6px; background: var(--icon, var(--t-ink)); }
+.app-icon svg { display: block; width: 100%; height: 100%; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+[data-look="frost"] .app-icon { display: block; box-shadow: inset 0 0 0 .5px rgb(0 0 0 / .08); }
+[data-look="mono"] .app::before { content: ''; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--dot, var(--t-dim)); }   /* the status dot */
+.when { flex: none; }
+.row { display: flex; align-items: center; gap: 12px; }
+/* the picture: a status icon (done, in progress, undo, error), a face (initials), or a thing drawn in line */
+.pic { position: relative; flex: none; width: 38px; height: 38px; display: grid; place-items: center; }
+[data-look="ivory"] .pic { width: 44px; height: 44px; }
+.pic > * { grid-area: 1 / 1; display: none; }
+.toast:not([data-pic]) .status, .toast[data-pic="thing"] .thing { display: block; }
+.status { width: 34px; height: 34px; overflow: visible; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.ring-track { stroke: var(--t-track); stroke-width: 2.2; }
+.ring { stroke: var(--t-busy); stroke-width: 2.2; stroke-dasharray: 1; stroke-dashoffset: 1; transform: rotate(-90deg); transform-origin: 16px 16px; }
+.i-done, .i-error, .i-undo { stroke-width: 2.4; opacity: 0; }
+.i-done { stroke: var(--t-ok); stroke-dasharray: 1; stroke-dashoffset: 1; }
+.i-error { stroke: var(--t-bad); }
+.i-undo { stroke: var(--t-ink); stroke-width: 2; }
+.toast[data-kind="done"] .i-done, .toast[data-kind="error"] .i-error, .toast[data-kind="undo"] .i-undo { opacity: 1; }
+.toast[data-kind="done"] .ring-track, .toast[data-kind="error"] .ring-track { stroke: none; }
+[data-look="ivory"] .status { width: 36px; height: 36px; }
+[data-look="ivory"] .status path { stroke-width: 1.6; }
+[data-look="ivory"] .ring, [data-look="ivory"] .ring-track { stroke-width: 1.2; }
+.face { width: 38px; height: 38px; border-radius: 50%; place-items: center; font-family: var(--sans); font-size: 14px; font-weight: 650; letter-spacing: .02em; color: #fff;
+  background: linear-gradient(140deg, hsl(var(--hue, 260) 80% 66%), hsl(calc(var(--hue, 260) + 40) 75% 52%)); box-shadow: inset 0 0 0 .5px rgb(0 0 0 / .1); }
+.toast[data-pic="face"] .face { display: grid; }
+.thing { width: 40px; height: 40px; fill: none; stroke: var(--t-thing); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.text { flex: 1; min-width: 0; }
+.t-title, .t-desc { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.t-title { font-size: var(--t-title); font-weight: var(--t-w); line-height: 1.2; letter-spacing: -.01em; }
+[data-look="ivory"] .t-title { letter-spacing: -.005em; }
+.t-desc { margin-top: 2px; font-family: var(--sans); font-size: var(--t-desc); line-height: 1.35; color: var(--t-dim); font-variant-numeric: tabular-nums; }
+[data-look="frost"] .t-desc { font-family: var(--system); }
+.t-code { margin: 6px 0 0; padding: 3px 7px; width: fit-content; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-family: var(--mono); font-size: 11.5px; color: var(--t-on-code); background: var(--t-code); box-shadow: inset 0 0 0 1px var(--t-code-edge); border-radius: 6px; }
+.t-code:empty { display: none; }
+.toast[data-kind="error"] .t-code { color: var(--t-bad); }
+.t-close { position: absolute; right: 8px; top: 8px; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 9px; background: none; color: var(--t-dim); cursor: pointer; }
+.t-close svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.t-close:hover { color: var(--t-ink); }
+/* the buttons: what to do next (a primary, and maybe a second) */
+.t-actions { display: flex; gap: 8px; }
+.toast:not([data-actions]) .t-actions { display: none; }
+[data-look="frost"] .t-actions, [data-look="mono"] .t-actions { padding-left: 50px; }
+[data-look="ivory"] .t-actions { padding-left: 56px; gap: 22px; }
+.t-action { height: 32px; padding: 0 16px; border: 0; border-radius: var(--t-btn-r); font-family: var(--sans); font-size: 13px; font-weight: 600; cursor: pointer;
+  text-transform: var(--t-btn-case); letter-spacing: var(--t-btn-track); color: var(--t-on-btn); background: var(--t-btn); }
+.t-alt { color: var(--t-on-alt); background: var(--t-alt); box-shadow: inset 0 0 0 1px var(--t-alt-edge); }
+.t-action:empty { display: none; }
+[data-look="frost"] .t-action { flex: 1; font-family: var(--system); }
+[data-look="mono"] .t-action { height: 28px; padding: 0 12px; font-size: 12.5px; font-weight: 500; }
+[data-look="ivory"] .t-action { height: 26px; padding: 0; font-size: 10.5px; text-decoration: underline; text-decoration-color: var(--iv-gold); text-underline-offset: 6px; text-decoration-thickness: 1px; }
+[data-look="ivory"] .t-alt { text-decoration-color: rgb(20 20 20 / .2); }
+.t-action:focus-visible, .t-close:focus-visible { outline: 2px solid var(--t-ink); outline-offset: 2px; }
+
+/* ---- 8. ?full=1: the page on its own, at the real viewport. The toasts live in the screen's corner: top right for
+        frost (bottom right for the others) on a wide screen, across the screen on a phone ---- */
+[data-full] body { overflow: auto; }
+[data-full] .stage { height: auto; min-height: 100dvh; overflow: visible; }
+[data-full] .frame { position: relative; left: auto; top: auto; width: 100%; min-height: 100dvh; height: auto; margin: 0; padding: clamp(40px, 10vh, 120px) 16px 180px; }
+[data-full] .amb { position: fixed; }
+[data-full] .tutorial, [data-full] .credits { display: none; }
+[data-full] .title { position: static; }
+[data-full] .actions { position: static; width: min(100%, 540px); margin: 36px auto 0; }
+[data-full] .toasts { position: fixed; left: auto; right: 24px; bottom: 24px; width: 380px; }
+[data-full][data-look="frost"] .toasts { top: 16px; bottom: auto; right: 16px; }
+@media (max-width: 599px) {
+  [data-full] .toasts { left: 10px; right: 10px; bottom: max(10px, env(safe-area-inset-bottom)); width: auto; }
+  [data-full][data-look="frost"] .toasts { top: max(10px, env(safe-area-inset-top)); bottom: auto; }
+}
+
+/* ---- 9. reduced motion: no flinging; things fade (app.js snaps the springs) ---- */
+@media (prefers-reduced-motion: reduce) {
+  .act { transition: none; }
+}
